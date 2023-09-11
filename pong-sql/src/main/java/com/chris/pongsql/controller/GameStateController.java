@@ -26,6 +26,13 @@ public class GameStateController {
         return "HELLO";
     }
 
+    @GetMapping(value = "/answer")
+    public String getAnswer(){
+        return "The answer is 42!";
+    }
+
+    /* --------------------------------------------------------------------------------------------- */
+
     //Should be void?
     @PostMapping("/createRoom")
     @ResponseStatus(HttpStatus.CREATED)
