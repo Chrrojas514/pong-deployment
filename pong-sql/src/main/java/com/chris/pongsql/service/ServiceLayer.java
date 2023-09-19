@@ -1,16 +1,22 @@
 package com.chris.pongsql.service;
 
+import com.chris.pongsql.config.ThreadPoolTaskSchedulerConfig;
 import com.chris.pongsql.model.GameState;
 import com.chris.pongsql.repository.GameStateRepository;
+import com.chris.pongsql.tasks.OnTickUpdate;
+import com.chris.pongsql.tasks.RunnableTask;
 import com.chris.pongsql.viewmodel.GameStateViewModel;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.support.PeriodicTrigger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class ServiceLayer {
@@ -20,6 +26,13 @@ public class ServiceLayer {
 
     @Autowired
     public ServiceLayer(GameStateRepository gameStateRepository) { this.gameStateRepository = gameStateRepository; }
+
+    @Autowired
+    private ThreadPoolTaskSchedulerConfig taskScheduler = new ThreadPoolTaskSchedulerConfig();
+
+    PeriodicTrigger periodicTrigger = new PeriodicTrigger(200, TimeUnit.MILLISECONDS);
+
+    OnTickUpdate updateGameTicks = new OnTickUpdate();
 
     //=================================================================================================================
 
@@ -249,8 +262,23 @@ public class ServiceLayer {
         GameState currentGame = target.get();
 
         currentGame.setGameStarted(true);
-
         gameStateRepository.save(currentGame);
+
+        //onTickUpdate(currentGame.getRoomName());
+
+        /*
+        RunnableTask runnableTask = new RunnableTask("Updating game ticks @ 200ms per sec");
+        runnableTask.setGameStateRepository(this.gameStateRepository);
+        runnableTask.setGameStateViewModel(buildViewModel(currentGame));
+
+        taskScheduler.threadPoolTaskScheduler().schedule(
+          runnableTask, periodicTrigger
+        );
+        */
+
+        updateGameTicks.setGameState(buildViewModel(currentGame));
+        updateGameTicks.onTickUpdate();
+
         return buildViewModel(currentGame);
     }
 
@@ -269,8 +297,43 @@ public class ServiceLayer {
         return buildViewModel(currentGame);
     }
 
-    public GameStateViewModel onTickUpdate(String roomName ) {
-        GameState target = gameStateRepository.findByroomName(roomName);
+    //@Scheduled(fixedRate = 1000) Annotation can only be used on no-arg methods
+    public GameStateViewModel onTickUpdate(int id) {
+        GameState target;
+        Optional<GameState> game = gameStateRepository.findById(id);
+
+        if (game.isEmpty()) {
+            return null;
+        }
+
+        target = game.get();
+
+        /*
+        Need a way to detect collision with paddle, how?
+            1-New bools /collisionDetected/{GameStateId} collisionDetected(bool collision) containing three bools -
+              paddleHitDetected and playerAScoreDetected, playerBScoreDetected where if paddleHit is true, reverse
+              ball x and y velocity. If one of the other bools are true, increment score. Requires front end to detect
+              collision. [I DONT THINK THIS IS DOABLE SINCE GAME TICK UPDATES SHOULD BE ON THE BACKEND, JUST CAME TO
+              MY BRAIN ¯\_(ツ)_/¯]
+
+            2-Board object / variable that contains the boundaries of the game board in pixels NxN.
+              Would mean paddle positions, ball positions and ball velocities values are changed to pixel values.
+              HARDCODED? [as in resizing the window or diff monitor sizes may screw things up, not sure on this]
+
+              TO BE INCLUDED IN EVERY TICK UPDATE:
+              if ball position at Y == top boundary or bottom boundary of board dimension {
+                Invert y velocity
+              }
+
+              if ball position at X AND Y == Paddle positions {
+                Invert x velocity
+              }
+
+              if ball position at X == 0 or other x-axis board boundary {
+                Depending on whether ball_positionX is at 0 or other boundary, increase score of
+                either playerA or playerB and reset ball to the middle position.
+              }
+         */
 
         target.setBallPositionX(target.getBallPositionX() + target.getBallVelocityX());
         target.setBallPositionY(target.getBallPositionY() + target.getBallVelocityY());
