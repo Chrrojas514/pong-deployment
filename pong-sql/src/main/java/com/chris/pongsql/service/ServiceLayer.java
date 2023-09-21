@@ -263,18 +263,18 @@ public class ServiceLayer {
 
         //onTickUpdate(currentGame.getRoomName());
 
-        RunnableTask runnableTask = new RunnableTask("Updating game ticks @ 200ms per sec");
+        /*RunnableTask runnableTask = new RunnableTask("Updating game ticks @ 200ms per sec");
         //runnableTask.setGameStateRepository(this.gameStateRepository);
         runnableTask.setGameStateViewModel(buildViewModel(currentGame));
 
         taskScheduler.threadPoolTaskScheduler().schedule(
           runnableTask, periodicTrigger
-        );
+        );*/
 
-        /*OnTickUpdate updateGameTicks = new OnTickUpdate();
+        OnTickUpdate updateGameTicks = new OnTickUpdate();
 
         updateGameTicks.setGameState(buildViewModel(currentGame));
-        updateGameTicks.onTickUpdate();*/
+        updateGameTicks.onTickUpdate();
 
         return buildViewModel(currentGame);
     }
