@@ -4,6 +4,7 @@ import com.chris.pongsql.repository.GameStateRepository;
 import com.chris.pongsql.service.ServiceLayer;
 import com.chris.pongsql.viewmodel.GameStateViewModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
@@ -16,7 +17,7 @@ public class RunnableTask implements Runnable {
     private GameStateRepository gameStateRepository;
 
     @Autowired
-    public ServiceLayer serviceLayer = new ServiceLayer(this.gameStateRepository);
+    public ServiceLayer serviceLayer = new ServiceLayer(gameStateRepository);
 
     public RunnableTask(String message) {
         this.message = message;
@@ -24,7 +25,7 @@ public class RunnableTask implements Runnable {
 
     @Override
     public void run() {
-        //serviceLayer.updateGame(gameStateViewModel);
+        serviceLayer.updateGame(gameStateViewModel);
 
         System.out.println(new Date() + "Runnable Task with " + message
         + "on thread " + Thread.currentThread().getName());

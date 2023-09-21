@@ -32,8 +32,6 @@ public class ServiceLayer {
 
     PeriodicTrigger periodicTrigger = new PeriodicTrigger(200, TimeUnit.MILLISECONDS);
 
-    OnTickUpdate updateGameTicks = new OnTickUpdate();
-
     //=================================================================================================================
 
     public GameStateViewModel buildViewModel(GameState gameState) {
@@ -62,7 +60,6 @@ public class ServiceLayer {
 
         return viewModel;
     }
-
 
 
     //=================================================================================================================
@@ -266,18 +263,18 @@ public class ServiceLayer {
 
         //onTickUpdate(currentGame.getRoomName());
 
-        /*
         RunnableTask runnableTask = new RunnableTask("Updating game ticks @ 200ms per sec");
-        runnableTask.setGameStateRepository(this.gameStateRepository);
+        //runnableTask.setGameStateRepository(this.gameStateRepository);
         runnableTask.setGameStateViewModel(buildViewModel(currentGame));
 
         taskScheduler.threadPoolTaskScheduler().schedule(
           runnableTask, periodicTrigger
         );
-        */
+
+        /*OnTickUpdate updateGameTicks = new OnTickUpdate();
 
         updateGameTicks.setGameState(buildViewModel(currentGame));
-        updateGameTicks.onTickUpdate();
+        updateGameTicks.onTickUpdate();*/
 
         return buildViewModel(currentGame);
     }

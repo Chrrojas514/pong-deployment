@@ -4,8 +4,12 @@ import com.chris.pongsql.repository.GameStateRepository;
 import com.chris.pongsql.service.ServiceLayer;
 import com.chris.pongsql.viewmodel.GameStateViewModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OnTickUpdate {
     public GameStateViewModel currentGame;
 
@@ -16,7 +20,7 @@ public class OnTickUpdate {
         currentGame = gameStateViewModel;
     }
 
-    @Scheduled(fixedRate = 1000)
+    //@Scheduled(fixedRate = 1000)
     public void onTickUpdate() {
         currentGame.setBallPositionX(currentGame.getBallPositionX() + currentGame.getBallVelocityX());
         currentGame.setBallPositionY(currentGame.getBallPositionY() + currentGame.getBallVelocityY());
