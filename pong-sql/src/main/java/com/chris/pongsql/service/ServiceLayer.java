@@ -5,12 +5,14 @@ import com.chris.pongsql.repository.GameStateRepository;
 import com.chris.pongsql.viewmodel.GameStateViewModel;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 public class ServiceLayer {
@@ -239,7 +241,7 @@ public class ServiceLayer {
         throw new IllegalArgumentException("Room is empty!");
     }
 
-    public GameStateViewModel startGame(int gameStateId) {
+    public GameStateViewModel startGame(int gameStateId) throws InterruptedException {
         Optional<GameState> target = gameStateRepository.findById(gameStateId);
 
         if (!target.isPresent()) {
@@ -249,6 +251,8 @@ public class ServiceLayer {
         GameState currentGame = target.get();
 
         currentGame.setGameStarted(true);
+
+        CompletableFuture<GameStateViewModel> jankDebug = onTickUpdate(currentGame.getRoomName());
 
         gameStateRepository.save(currentGame);
         return buildViewModel(currentGame);
@@ -269,14 +273,18 @@ public class ServiceLayer {
         return buildViewModel(currentGame);
     }
 
-    public GameStateViewModel onTickUpdate(String roomName ) {
+    @Async
+    public CompletableFuture<GameStateViewModel> onTickUpdate(String roomName ) throws InterruptedException {
         GameState target = gameStateRepository.findByroomName(roomName);
 
-        target.setBallPositionX(target.getBallPositionX() + target.getBallVelocityX());
-        target.setBallPositionY(target.getBallPositionY() + target.getBallVelocityY());
+        while (!target.isGameOver()) {
+            target.setBallPositionX(target.getBallPositionX() + target.getBallVelocityX());
+            target.setBallPositionY(target.getBallPositionY() + target.getBallVelocityY());
 
-        gameStateRepository.save(target);
+            gameStateRepository.save(target);
+            Thread.sleep(1000);
+        }
 
-        return buildViewModel(target);
+        return CompletableFuture.completedFuture(buildViewModel(target));
     }
 }

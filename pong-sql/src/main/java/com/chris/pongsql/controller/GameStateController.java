@@ -81,7 +81,7 @@ public class GameStateController {
 
     @PostMapping("/startGame/{gameStateId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public GameStateViewModel startGame(@PathVariable @Valid int gameStateId) {
+    public GameStateViewModel startGame(@PathVariable @Valid int gameStateId) throws InterruptedException {
         return serviceLayer.startGame(gameStateId);
     }
 
