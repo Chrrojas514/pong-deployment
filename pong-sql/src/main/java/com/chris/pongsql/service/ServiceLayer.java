@@ -23,6 +23,7 @@ public class ServiceLayer {
     @Autowired
     public ServiceLayer(GameStateRepository gameStateRepository) { this.gameStateRepository = gameStateRepository; }
 
+
     //=================================================================================================================
 
     public GameStateViewModel buildViewModel(GameState gameState) {
@@ -53,9 +54,7 @@ public class ServiceLayer {
     }
 
 
-
     //=================================================================================================================
-
     @Transactional
     public GameStateViewModel saveGame(GameStateViewModel viewModel) {
         if (viewModel.equals(null)) {
@@ -255,6 +254,7 @@ public class ServiceLayer {
         CompletableFuture<GameStateViewModel> jankDebug = onTickUpdate(currentGame.getRoomName());
 
         gameStateRepository.save(currentGame);
+
         return buildViewModel(currentGame);
     }
 
@@ -276,6 +276,27 @@ public class ServiceLayer {
     @Async
     public CompletableFuture<GameStateViewModel> onTickUpdate(String roomName ) throws InterruptedException {
         GameState target = gameStateRepository.findByroomName(roomName);
+
+        /*
+        Need a way to detect collision with paddle, how?
+            Board object / variable that contains the boundaries of the game board in pixels NxN.
+              Would mean paddle positions, ball positions and ball velocities values are changed to pixel values.
+              HARDCODED? [as in resizing the window or diff monitor sizes may screw things up, not sure on this]
+
+              TO BE INCLUDED IN EVERY TICK UPDATE:
+              if ball position at Y == top boundary or bottom boundary of board dimension {
+                Invert y velocity
+              }
+
+              if ball position at X AND Y == Paddle positions {
+                Invert x velocity
+              }
+
+              if ball position at X == 0 or other x-axis board boundary {
+                Depending on whether ball_positionX is at 0 or other boundary, increase score of
+                either playerA or playerB and reset ball to the middle position.
+              }
+         */
 
         while (!target.isGameOver()) {
             target.setBallPositionX(target.getBallPositionX() + target.getBallVelocityX());
